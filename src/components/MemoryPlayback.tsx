@@ -1,3 +1,4 @@
+
 import React, {useState} from "react";
 import {Heart, Calendar, MapPin, CloudSun, ChevronLeft, ChevronRight} from "lucide-react";
 import {dummyPlants} from "@/lib/dummyData";
@@ -88,13 +89,13 @@ const MemoryPlayback: React.FC = () => {
         <div className="h-full flex flex-col">
             <Header title="Memory Journal" subtitle="Your plant memories"/>
 
-            <div className="flex-1 flex flex-col relative overflow-hidden bg-plantDiary-peach/30 px-4 py-6">
+            <div className="flex-1 flex flex-col relative overflow-hidden bg-plantDiary-peach/30 px-4 py-8">
                 {/* Journal pages */}
                 <div className="absolute inset-0 bg-paper-texture opacity-50"></div>
 
                 <AnimatePresence initial={false} custom={direction}>
                     <motion.div
-                        className="absolute inset-x-4 top-6 bottom-20 rounded-lg shadow-lg bg-white overflow-hidden"
+                        className="absolute inset-x-4 top-8 bottom-24 rounded-lg shadow-lg bg-white overflow-hidden"
                         key={currentIndex}
                         custom={direction}
                         variants={pageVariants}
@@ -105,8 +106,8 @@ const MemoryPlayback: React.FC = () => {
                     >
                         <div className="h-full flex flex-col">
                             {/* Memory page content */}
-                            <div className="p-6 flex-1 overflow-y-auto">
-                                <div className="flex flex-col h-full ">
+                            <div className="p-6 flex-1">
+                                <div className="flex flex-col h-full">
                                     <div className="mb-4 text-center">
                                         <span className="inline-block bg-plantDiary-blue/20 px-3 py-1 rounded-full text-xs">
                                           {currentMemory.date.toLocaleDateString()}
@@ -166,7 +167,7 @@ const MemoryPlayback: React.FC = () => {
                 </AnimatePresence>
 
                 {/* Page navigation controls */}
-                <div className="absolute bottom-6 left-0 right-0 flex justify-between px-8">
+                <div className="absolute bottom-8 left-0 right-0 flex justify-between px-8">
                     <button
                         onClick={handlePrevPage}
                         className="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity"
@@ -196,11 +197,11 @@ const MemoryPlayback: React.FC = () => {
                 {plantsWithMemories.length > 1 && (
                     <>
                         <div
-                            className="absolute top-6 bottom-20 left-0 w-1/3 cursor-pointer"
+                            className="absolute top-8 bottom-24 left-0 w-1/3 cursor-pointer"
                             onClick={handlePrevPage}
                         />
                         <div
-                            className="absolute top-6 bottom-20 right-0 w-1/3 cursor-pointer"
+                            className="absolute top-8 bottom-24 right-0 w-1/3 cursor-pointer"
                             onClick={handleNextPage}
                         />
                     </>
