@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { PlusCircle, Share2, Trash2, Image, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -163,32 +164,34 @@ const CollageGallery: React.FC<CollageGalleryProps> = ({ onCreateNew }) => {
                   />
                 </div>
                 <CardContent className="p-3">
-                  <h3 className="font-medium text-sm truncate">{collage.name}</h3>
-                  <p className="text-xs text-muted-foreground">{formatDate(collage.createdAt)}</p>
-                  <div className="flex justify-between mt-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-medium text-sm truncate mr-2">{collage.name}</h3>
+                    <p className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(collage.createdAt)}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="text-xs px-2"
+                      className="text-xs px-2 h-8"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleShare(collage);
                       }}
                     >
-                      <Share2 className="h-3.5 w-3.5 mr-1" />
+                      <Share2 className="h-3 w-3 mr-1" />
                       Share
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="text-destructive text-xs px-2"
+                      className="text-destructive text-xs px-2 h-8"
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedCollage(collage);
                         setDeleteDialogOpen(true);
                       }}
                     >
-                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      <Trash2 className="h-3 w-3 mr-1" />
                       Delete
                     </Button>
                   </div>

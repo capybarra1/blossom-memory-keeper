@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Plus, Heart, X, Leaf } from "lucide-react";
@@ -87,7 +86,7 @@ const SpecimenBook: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col ">
+    <div className="h-full flex flex-col overflow-hidden">
       {/* === Header隐藏逻辑开始 === */}
       {!selectedPlant && (
         <Header title="Good Morning" subtitle="Start your botanical journey" />
@@ -106,6 +105,7 @@ const SpecimenBook: React.FC = () => {
 
       <div className="flex-1 overflow-hidden">
         {selectedPlant ? (
+          
           <div className="h-full animate-fade-in">
             <div className="relative h-2/5">
               <img
@@ -186,6 +186,7 @@ const SpecimenBook: React.FC = () => {
                   </Button>
                 </div>
               ) : (
+                
                 <div className="text-center p-4 floating-card rounded-2xl bg-gradient-to-br from-white/90 to-plantDiary-lightGreen/20">
                   <div className="w-16 h-16 bg-plantDiary-purple/30 rounded-full flex items-center justify-center mx-auto mb-3 floating-element">
                     <Plus className="h-8 w-8 text-foreground/40" />
@@ -206,7 +207,7 @@ const SpecimenBook: React.FC = () => {
             </div>
           </div>
         ) : searchQuery ? (
-          <div className="p-4 grid grid-cols-2 gap-4 bg-gradient-to-b from-white/60 to-plantDiary-yellow/10">
+          <div className="p-4 grid grid-cols-2 gap-4 bg-gradient-to-b from-white/60 to-plantDiary-yellow/10 overflow-y-auto">
             {filteredPlants.length > 0 ? (
               filteredPlants.map(plant => (
                 <PlantCard
@@ -222,14 +223,8 @@ const SpecimenBook: React.FC = () => {
             )}
           </div>
         ) : (
-          <Tabs defaultValue={categories[0]} className="h-full">
-            <TabsList className="w-full flex
-                                 gap-2 justify-start
-                                 px-4 pt-4 pb-1
-                                 bg-transparent
-                                 overflow-x-auto flex-nowrap whitespace-nowrap
-                                 shadow-none border-none scrollbar-hide
-                                 hover:scrollbar-default">
+          <Tabs defaultValue={categories[0]} className="h-full flex flex-col">
+            <TabsList className="w-full flex gap-2 justify-start px-4 pt-4 pb-1 bg-transparent flex-shrink-0 shadow-none border-none">
               {categories.map(category => (
                 <TabsTrigger
                   key={category}
@@ -247,7 +242,7 @@ const SpecimenBook: React.FC = () => {
               <TabsContent
                 key={category}
                 value={category}
-                className="p-4 h-[calc(100%-50px)] overflow-y-auto bg-gradient-to-b from-white/60 to-plantDiary-yellow/10"
+                className="p-4 flex-1 overflow-y-auto bg-gradient-to-b from-white/60 to-plantDiary-yellow/10"
               >
                 <div className="grid grid-cols-2 gap-4">
                   {(plantsByCategory[category] || []).map(plant => (

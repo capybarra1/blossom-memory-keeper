@@ -53,6 +53,16 @@ const Index = () => {
     setSafeAreaColor(getColorForTab(activeTab));
   }, [activeTab, setSafeAreaColor]);
 
+  // 监听来自拼贴画保存的状态，切换到collage标签页
+  useEffect(() => {
+    const handleCollageSaved = () => {
+      setActiveTab("collage");
+    };
+
+    window.addEventListener('collageSaved', handleCollageSaved);
+    return () => window.removeEventListener('collageSaved', handleCollageSaved);
+  }, []);
+
   const renderActiveTab = () => {
     switch (activeTab) {
       case "specimens":
@@ -83,9 +93,15 @@ const Index = () => {
   // Set the specimens tab as active when returning from identification
   useEffect(() => {
     if (location.pathname === "/") {
-      setActiveTab("specimens");
+      // 检查是否从拼贴画页面跳转回来
+      const fromCollage = location.state?.fromCollage;
+      if (fromCollage) {
+        setActiveTab("collage");
+      } else {
+        setActiveTab("specimens");
+      }
     }
-  }, [location.pathname]);
+  }, [location.pathname, location.state]);
 
   return (
     <div className="h-screen overflow-hidden flex flex-col">
