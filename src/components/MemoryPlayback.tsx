@@ -126,8 +126,8 @@ const MemoryPlayback: React.FC = () => {
 
                                     <div className="mb-6 relative">
                                         <img
-                                            src={currentMemory.photoUrl}
-                                            alt={currentPlant.name}
+                                            src="https://images.unsplash.com/photo-1498579150354-977475b7ea0b"
+                                            alt="Lavender field landscape"
                                             className="w-full h-60 object-cover rounded-lg shadow-md"
                                         />
                                         <div
@@ -136,39 +136,39 @@ const MemoryPlayback: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center mb-4">
-                                        <div className="w-12 h-12 relative mr-3">
-                                            <img
-                                                src={currentPlant.imageUrl}
-                                                alt={currentPlant.name}
-                                                className="w-full h-full object-contain"
-                                            />
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center flex-1">
+                                            <div className="w-12 h-12 relative mr-3">
+                                                <img
+                                                    src={currentPlant.imageUrl}
+                                                    alt={currentPlant.name}
+                                                    className="w-full h-full object-contain"
+                                                />
+                                            </div>
+                                            <div className="flex-1">
+                                                <h3 className="font-semibold">{currentPlant.name}</h3>
+                                                <p className="text-xs italic text-foreground/60">{currentPlant.scientificName}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h3 className="font-semibold">{currentPlant.name}</h3>
-                                            <p className="text-xs italic text-foreground/60">{currentPlant.scientificName}</p>
+                                        
+                                        <div className="flex flex-col gap-1.5 ml-2">
+                                            {currentMemory.location && (
+                                                <div className="flex items-center text-xs bg-plantDiary-green/30 px-2 py-1 rounded-full">
+                                                    <MapPin className="h-3 w-3 mr-1"/>
+                                                    <span className="whitespace-nowrap">{currentMemory.location}</span>
+                                                </div>
+                                            )}
+                                            {currentMemory.weather && (
+                                                <div className="flex items-center text-xs bg-plantDiary-blue/30 px-2 py-1 rounded-full">
+                                                    <CloudSun className="h-3 w-3 mr-1"/>
+                                                    <span className="whitespace-nowrap">{currentMemory.weather}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
                                     <div className="bg-plantDiary-yellow/20 p-4 rounded-lg mb-4 relative hand-drawn">
                                         <p className="text-sm">{currentMemory.text}</p>
-                                    </div>
-
-                                    <div className="mt-auto flex flex-wrap gap-2">
-                                        {currentMemory.location && (
-                                            <div
-                                                className="flex items-center text-xs bg-plantDiary-green/30 px-2.5 py-1.5 rounded-full">
-                                                <MapPin className="h-3 w-3 mr-1.5"/>
-                                                {currentMemory.location}
-                                            </div>
-                                        )}
-                                        {currentMemory.weather && (
-                                            <div
-                                                className="flex items-center text-xs bg-plantDiary-blue/30 px-2.5 py-1.5 rounded-full">
-                                                <CloudSun className="h-3 w-3 mr-1.5"/>
-                                                {currentMemory.weather}
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             </div>
