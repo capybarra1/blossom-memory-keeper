@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Navigation from "@/components/Navigation";
@@ -36,6 +37,11 @@ const Index = () => {
     }
   };
 
+  const handlePlantClick = (plantId: string) => {
+    // 切换到标本页面并可以在这里添加选中特定植物的逻辑
+    setActiveTab("specimens");
+  };
+
   // For testing - reset onboarding status
   const resetOnboarding = () => {
     localStorage.removeItem("onboardingCompleted");
@@ -58,7 +64,7 @@ const Index = () => {
       case "profile":
         return (
           <>
-            <ProfileDashboard />
+            <ProfileDashboard onPlantClick={handlePlantClick} />
             <div className="p-4">
               <button 
                 onClick={resetOnboarding}

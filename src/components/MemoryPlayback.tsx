@@ -1,14 +1,14 @@
+
 import React, {useState} from "react";
 import {Heart, Calendar, MapPin, CloudSun, ChevronLeft, ChevronRight} from "lucide-react";
 import {dummyPlants} from "@/lib/dummyData";
 import {motion, AnimatePresence} from "framer-motion";
 import Header from "./Header";
-import boardImg from '/src/asset/renderings/board.png'
 
 const MemoryPlayback: React.FC = () => {
     const [currentIndex, setCurrentIndex] = useState<number>(0);
     const [direction, setDirection] = useState<number>(0);
-    const plantsWithMemories = dummyPlants.filter(plant => plant.hasMemory);
+    const plantsWithMemories = dummyPlants.filter(plant => plant.hasMemory && plant.memories.length > 0);
 
     const handleNextPage = () => {
         setDirection(1);
@@ -24,13 +24,11 @@ const MemoryPlayback: React.FC = () => {
         );
     };
 
-    const currentPlant = plantsWithMemories[currentIndex];
-
     // Handle empty state
-    if (currentPlant.memories.length === 0) {
+    if (plantsWithMemories.length === 0) {
         return (
             <div className="h-full flex flex-col">
-
+                <Header title="Memory Journal" subtitle="Your plant memories"/>
                 <div className="flex-1 flex items-center justify-center p-6">
                     <div className="text-center">
                         <div
@@ -40,6 +38,25 @@ const MemoryPlayback: React.FC = () => {
                         <h3 className="text-xl font-medium mb-2">No memories yet</h3>
                         <p className="text-sm text-foreground/60 max-w-xs">
                             Start collecting plants and add memories to see them here
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    const currentPlant = plantsWithMemories[currentIndex];
+    const currentMemory = currentPlant?.memories[0];
+
+    if (!currentMemory) {
+        return (
+            <div className="h-full flex flex-col">
+                <Header title="Memory Journal" subtitle="Your plant memories"/>
+                <div className="flex-1 flex items-center justify-center p-6">
+                    <div className="text-center">
+                        <h3 className="text-xl font-medium mb-2">No memory found</h3>
+                        <p className="text-sm text-foreground/60">
+                            This plant doesn't have any memories
                         </p>
                     </div>
                 </div>
@@ -98,14 +115,14 @@ const MemoryPlayback: React.FC = () => {
                             <div className="p-6 flex-1 overflow-y-auto">
                                 <div className="flex flex-col h-full ">
                                     <div className="mb-4 text-center">
-                    <span className="inline-block bg-plantDiary-blue/20 px-3 py-1 rounded-full text-xs">
-                      {currentPlant.memories[0].date.toLocaleDateString()}
-                    </span>
+                                        <span className="inline-block bg-plantDiary-blue/20 px-3 py-1 rounded-full text-xs">
+                                          {currentMemory.date.toLocaleDateString()}
+                                        </span>
                                     </div>
 
                                     <div className="mb-6 relative">
                                         <img
-                                            src={currentPlant.memories[0].photoUrl}
+                                            src={currentMemory.photoUrl}
                                             alt={currentPlant.name}
                                             className="w-full h-60 object-cover rounded-lg shadow-md"
                                         />
@@ -130,22 +147,22 @@ const MemoryPlayback: React.FC = () => {
                                     </div>
 
                                     <div className="bg-plantDiary-yellow/20 p-4 rounded-lg mb-4 relative hand-drawn">
-                                        <p className="text-sm">{currentPlant.memories[0].text}</p>
+                                        <p className="text-sm">{currentMemory.text}</p>
                                     </div>
 
                                     <div className="mt-auto flex flex-wrap gap-2">
-                                        {currentPlant.memories[0].location && (
+                                        {currentMemory.location && (
                                             <div
                                                 className="flex items-center text-xs bg-plantDiary-green/30 px-2.5 py-1.5 rounded-full">
                                                 <MapPin className="h-3 w-3 mr-1.5"/>
-                                                {currentPlant.memories[0].location}
+                                                {currentMemory.location}
                                             </div>
                                         )}
-                                        {currentPlant.memories[0].weather && (
+                                        {currentMemory.weather && (
                                             <div
                                                 className="flex items-center text-xs bg-plantDiary-blue/30 px-2.5 py-1.5 rounded-full">
                                                 <CloudSun className="h-3 w-3 mr-1.5"/>
-                                                {currentPlant.memories[0].weather}
+                                                {currentMemory.weather}
                                             </div>
                                         )}
                                     </div>
@@ -161,34 +178,40 @@ const MemoryPlayback: React.FC = () => {
                         onClick={handlePrevPage}
                         className="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity"
                         aria-label="Previous page"
+                        disabled={plantsWithMemories.length <= 1}
                     >
                         <ChevronLeft className="h-6 w-6 text-foreground/70"/>
                     </button>
 
                     <div className="text-center bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
-            <span className="text-xs">
-              {currentIndex + 1} / {plantsWithMemories.length}
-            </span>
+                        <span className="text-xs">
+                          {currentIndex + 1} / {plantsWithMemories.length}
+                        </span>
                     </div>
 
                     <button
                         onClick={handleNextPage}
                         className="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity"
                         aria-label="Next page"
+                        disabled={plantsWithMemories.length <= 1}
                     >
                         <ChevronRight className="h-6 w-6 text-foreground/70"/>
                     </button>
                 </div>
 
-                {/* Tap zones for turning pages */}
-                <div
-                    className="absolute top-0 bottom-16 left-0 w-1/3"
-                    onClick={handlePrevPage}
-                />
-                <div
-                    className="absolute top-0 bottom-16 right-0 w-1/3"
-                    onClick={handleNextPage}
-                />
+                {/* Tap zones for turning pages - 只在有多页时显示 */}
+                {plantsWithMemories.length > 1 && (
+                    <>
+                        <div
+                            className="absolute top-0 bottom-16 left-0 w-1/3 cursor-pointer"
+                            onClick={handlePrevPage}
+                        />
+                        <div
+                            className="absolute top-0 bottom-16 right-0 w-1/3 cursor-pointer"
+                            onClick={handleNextPage}
+                        />
+                    </>
+                )}
             </div>
         </div>
     );

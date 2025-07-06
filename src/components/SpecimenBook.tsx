@@ -5,12 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { dummyPlants, Plant, getPlantsByCategory, formatDateString } from "@/lib/dummyData";
 import PlantCard from "./PlantCard";
+import AddMemoryModal from "./AddMemoryModal";
 import { cn } from "@/lib/utils";
 import Header from "./Header";
 
 const SpecimenBook: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPlant, setSelectedPlant] = useState<Plant | null>(null);
+  const [showAddMemory, setShowAddMemory] = useState(false);
+  const [plants, setPlants] = useState(dummyPlants);
   const plantsByCategory = getPlantsByCategory();
   const categories = ["Flower", "Leaf", "Seed", "Fruit"];
 
@@ -27,11 +30,11 @@ const SpecimenBook: React.FC = () => {
   }
 
   const filteredPlants = searchQuery
-    ? dummyPlants.filter(plant =>
+    ? plants.filter(plant =>
       plant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       plant.scientificName.toLowerCase().includes(searchQuery.toLowerCase())
     )
-    : dummyPlants;
+    : plants;
 
   const handlePlantClick = (plant: Plant) => {
     setSelectedPlant(plant);
@@ -41,6 +44,31 @@ const SpecimenBook: React.FC = () => {
     setSelectedPlant(null);
   };
 
+  const handleAddMemory = () => {
+    setShowAddMemory(true);
+  };
+
+  const handleSaveMemory = (memory: any) => {
+    if (selectedPlant) {
+      const updatedPlants = plants.map(plant => {
+        if (plant.id === selectedPlant.id) {
+          return {
+            ...plant,
+            hasMemory: true,
+            memories: [...plant.memories, memory]
+          };
+        }
+        return plant;
+      });
+      setPlants(updatedPlants);
+      setSelectedPlant({
+        ...selectedPlant,
+        hasMemory: true,
+        memories: [...selectedPlant.memories, memory]
+      });
+    }
+  };
+
   return (
     <div className="h-full flex flex-col ">
       {/* === Header隐藏逻辑开始 === */}
@@ -48,17 +76,16 @@ const SpecimenBook: React.FC = () => {
         <Header title="Good Morning" subtitle="Start your botanical journey" />
       )}
 
-
       {!selectedPlant && (
         <div className="relative px-4 pb-4 mt-4 flex items-center">
-        <Input prefix={<Search className="h-6 w-6 text-foreground/40 mr-2" />}
-          placeholder="Search plants..."
-          className="flex-1 rounded-full bg-white border border-plantDiary-gray shadow-none focus:ring-2 focus:ring-accent/30 text-base"
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
+          <Input prefix={<Search className="h-6 w-6 text-foreground/40 mr-2" />}
+            placeholder="Search plants..."
+            className="flex-1 rounded-full bg-white border border-plantDiary-gray shadow-none focus:ring-2 focus:ring-accent/30 text-base"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
           />
-      </div>
-        )}
+        </div>
+      )}
 
       <div className="flex-1 overflow-hidden">
         {selectedPlant ? (
@@ -95,7 +122,7 @@ const SpecimenBook: React.FC = () => {
                 </div>
               </div>
 
-              {selectedPlant.hasMemory && selectedPlant.memories.length ?  (
+              {selectedPlant.hasMemory && selectedPlant.memories.length ? (
                 <div>
                   <h3 className="font-semibold mb-3 flex items-center">
                     <Heart className="h-4 w-4 text-rose-500 mr-2 fill-rose-500" />
@@ -136,7 +163,10 @@ const SpecimenBook: React.FC = () => {
                   <p className="text-sm text-foreground/60 mb-3">
                     Add a memory to this specimen
                   </p>
-                  <Button className="w-full bg-gradient-to-r from-plantDiary-vividGreen to-plantDiary-darkGreen hover:from-plantDiary-darkGreen hover:to-plantDiary-vividGreen text-white">
+                  <Button 
+                    onClick={handleAddMemory}
+                    className="w-full bg-gradient-to-r from-plantDiary-vividGreen to-plantDiary-darkGreen hover:from-plantDiary-darkGreen hover:to-plantDiary-vividGreen text-white"
+                  >
                     <Heart className="h-4 w-4 mr-2" />
                     Add Memory
                   </Button>
@@ -202,6 +232,13 @@ const SpecimenBook: React.FC = () => {
           </Tabs>
         )}
       </div>
+
+      <AddMemoryModal
+        plant={selectedPlant || plants[0]}
+        isOpen={showAddMemory}
+        onClose={() => setShowAddMemory(false)}
+        onSave={handleSaveMemory}
+      />
     </div>
   );
 };

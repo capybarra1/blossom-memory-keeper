@@ -1,13 +1,19 @@
-
-import React from "react";
+import React, { useState } from "react";
 import { Leaf, Trophy, Clock, Heart } from "lucide-react";
 import { getCollectionStats, getRecentlyCollected } from "@/lib/dummyData";
 import PlantCard from "./PlantCard";
+import ProfileSettings from "./ProfileSettings";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import avartarImage from '/src/asset/renderings/avatar.png';
-const ProfileDashboard: React.FC = () => {
+
+interface ProfileDashboardProps {
+  onPlantClick?: (plantId: string) => void;
+}
+
+const ProfileDashboard: React.FC<ProfileDashboardProps> = ({ onPlantClick }) => {
+  const [showSettings, setShowSettings] = useState(false);
   const stats = getCollectionStats();
   const recentlyCollected = getRecentlyCollected();
   
@@ -17,12 +23,25 @@ const ProfileDashboard: React.FC = () => {
     { name: "Tree Specialist", description: "Collected 5 tree specimens", achieved: false },
   ];
 
+  const handleAvatarClick = () => {
+    setShowSettings(true);
+  };
+
+  const handlePlantCardClick = (plant: any) => {
+    if (onPlantClick) {
+      onPlantClick(plant.id);
+    }
+  };
+
   return (
     <div className="h-full overflow-y-auto">
       <div className="sticky top-0 z-10 p-4 border-b border-plantDiary-gray bg-gradient-to-r from-white/80 to-plantDiary-lightGreen/50 backdrop-blur-sm flex items-center gap-4">
-        <div className="w-16 h-16 rounded-full gradient-purple flex items-center justify-center shadow-md floating-element">
-          <img src={avartarImage} />
-        </div>
+        <button 
+          onClick={handleAvatarClick}
+          className="w-16 h-16 rounded-full gradient-purple flex items-center justify-center shadow-md floating-element cursor-pointer hover:scale-105 transition-transform"
+        >
+          <img src={avartarImage} alt="Avatar" className="w-full h-full rounded-full" />
+        </button>
         <div>
           <h1 className="text-xl font-semibold">Jane's Plant Diary</h1>
           <p className="text-sm text-foreground/60">Plant collector since May 2023</p>
@@ -109,10 +128,16 @@ const ProfileDashboard: React.FC = () => {
               key={plant.id} 
               plant={plant} 
               variant="small"
+              onClick={() => handlePlantCardClick(plant)}
             />
           ))}
         </div>
       </div>
+
+      <ProfileSettings 
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
     </div>
   );
 };
