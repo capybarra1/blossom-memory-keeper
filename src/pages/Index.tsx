@@ -6,14 +6,31 @@ import MemoryPlayback from "@/components/MemoryPlayback";
 import ProfileDashboard from "@/components/ProfileDashboard";
 import CollageGallery from "@/components/CollageGallery";
 import Header from "@/components/Header";
+import { useSafeArea } from "@/contexts/SafeAreaContext";
 
 const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState("specimens");
+  const { setSafeAreaColor } = useSafeArea();
+
+  // 定义各页面的安全区域颜色
+  const getColorForTab = (tab: string) => {
+    switch (tab) {
+      case "specimens":
+      case "memories":
+      case "collage":
+        return "#75B798"; // 绿色
+      case "profile":
+        return "#75B798"; // Jane's Plant Diary部分的背景色（绿色）
+      default:
+        return "#75B798";
+    }
+  };
 
   const handleActiveTabChange = (tab: string) => {
     setActiveTab(tab);
+    setSafeAreaColor(getColorForTab(tab));
     if (tab === "collect") {
       navigate("/identify");
     }
@@ -24,6 +41,11 @@ const Index = () => {
     localStorage.removeItem("onboardingCompleted");
     window.location.reload();
   };
+
+  // 当标签页改变时更新安全区域颜色
+  useEffect(() => {
+    setSafeAreaColor(getColorForTab(activeTab));
+  }, [activeTab, setSafeAreaColor]);
 
   const renderActiveTab = () => {
     switch (activeTab) {
@@ -61,11 +83,10 @@ const Index = () => {
 
   return (
     <div className="h-screen overflow-hidden flex flex-col">
-      {/* === Header全局顶部栏结束 === */}
       <div className="flex-1 overflow-hidden">
         {renderActiveTab()}
       </div>
-      <div className="h-16"></div> {/* Spacer for nav bar */}
+      <div className="h-16"></div>
       <Navigation activeTab={activeTab} setActiveTab={handleActiveTabChange} />
     </div>
   );

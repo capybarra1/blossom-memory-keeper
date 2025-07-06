@@ -32,7 +32,7 @@ const PlantCard: React.FC<PlantCardProps> = ({
           onClick={onClick}
           className={cn(
               "cursor-pointer overflow-hidden bg-gradient-to-b from-[#E6F4EA] to-white rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between transition-transform duration-200 hover:scale-105 relative",
-              variant === "grid" && "w-full aspect-[3/4]",
+              variant === "grid" && "w-full aspect-[5/8]",
               variant === "list" && "flex-row items-center w-full h-24",
               variant === "small" && "w-full aspect-square"
           )}

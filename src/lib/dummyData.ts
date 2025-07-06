@@ -1,6 +1,7 @@
 
 import { format } from 'date-fns';
-
+import lameiImg from '/src/asset/plants/lamei.png';
+import purpleWisteriaImg from '/src/asset/plants/purple_wisteria.png';
 export interface PlantMemory {
   id: string;
   text?: string;
@@ -28,7 +29,7 @@ export const dummyPlants: Plant[] = [
     name: 'Wintersweet',
     scientificName: 'Chimonanthus praecox',
     dateCollected: new Date(2024, 12, 28),
-    imageUrl: 'src/asset/plants/lamei.png',
+    imageUrl: lameiImg,
     description: 'Stumbled upon this delicate yellow bloom on a chilly morning walk. Its sweet fragrance stood out amidst the bare branches.',
     hasMemory: true,
     memories: [
@@ -48,7 +49,7 @@ export const dummyPlants: Plant[] = [
     name: 'Purple Wisteria',
     scientificName: 'Wisteria sinensis',
     dateCollected: new Date(2024, 12, 3),
-    imageUrl: 'src/asset/plants/purple_wisteria.png',
+    imageUrl: purpleWisteriaImg,
     description: 'A cascading cluster of fragrant flowers,often seen hanging from garden trellises.',
     hasMemory: true,
     memories: [

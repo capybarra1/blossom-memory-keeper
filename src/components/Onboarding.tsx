@@ -36,28 +36,32 @@ const Onboarding: React.FC = () => {
         if (currentScreen < screens.length - 1) {
             setCurrentScreen(currentScreen + 1);
         } else {
-            // Mark onboarding as completed
-            // Note: Using window.location for navigation as requested
+            // Mark onboarding as completed and navigate to main app
+            localStorage.setItem("onboardingCompleted", "true");
             window.location.href = "/";
+            navigate('/');
         }
     };
 
     const handleSkip = () => {
         // Mark onboarding as completed even if skipped
-        // Note: Using window.location for navigation as requested
+        localStorage.setItem("onboardingCompleted", "true");
         window.location.href = "/";
+        navigate('/')
     };
 
     return (
         <AnimatePresence mode="wait">
             <motion.div
-                className="h-screen w-screen flex flex-col relative overflow-hidden"
+                className="h-screen w-screen flex flex-col relative overflow-hidden touch-none select-none"
                 style={{backgroundColor: screens[currentScreen].bgColor}}
                 key={currentScreen}
                 initial={{opacity: 0}}
                 animate={{opacity: 1}}
                 exit={{opacity: 0}}
                 transition={{duration: 0.5}}
+                onTouchStart={(e) => e.preventDefault()}
+                onTouchMove={(e) => e.preventDefault()}
             >
                 {/* Main content container */}
                 <div className="flex-1 flex flex-col items-center justify-center px-8 py-16">
@@ -78,6 +82,7 @@ const Onboarding: React.FC = () => {
                                 src={screens[currentScreen].image}
                                 alt={screens[currentScreen].title}
                                 className="w-full h-full object-contain"
+                                draggable={false}
                             />
                         </motion.div>
 

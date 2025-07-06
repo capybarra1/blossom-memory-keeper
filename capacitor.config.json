@@ -1,0 +1,6 @@
+{
+  "appId": "com.memory.blossom",
+  "appName": "Plantale",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

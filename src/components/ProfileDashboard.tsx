@@ -6,7 +6,7 @@ import PlantCard from "./PlantCard";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-
+import avartarImage from '/src/asset/renderings/avatar.png';
 const ProfileDashboard: React.FC = () => {
   const stats = getCollectionStats();
   const recentlyCollected = getRecentlyCollected();
@@ -21,7 +21,7 @@ const ProfileDashboard: React.FC = () => {
     <div className="h-full overflow-y-auto">
       <div className="sticky top-0 z-10 p-4 border-b border-plantDiary-gray bg-gradient-to-r from-white/80 to-plantDiary-lightGreen/50 backdrop-blur-sm flex items-center gap-4">
         <div className="w-16 h-16 rounded-full gradient-purple flex items-center justify-center shadow-md floating-element">
-          <img src='/src/asset/renderings/avatar.png'/>
+          <img src={avartarImage} />
         </div>
         <div>
           <h1 className="text-xl font-semibold">Jane's Plant Diary</h1>

@@ -4,7 +4,7 @@ import Onboarding from '@/components/Onboarding';
 
 const OnboardingPage = () => {
   return (
-    <div className="h-screen w-screen overflow-hidden">
+    <div className="h-screen w-screen overflow-hidden touch-none">
       <Onboarding />
     </div>
   );

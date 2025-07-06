@@ -1,0 +1,17 @@
+import { useSafeArea } from "@/contexts/SafeAreaContext";
+import { useEffect } from "react";
+
+const SomePage = () => {
+  const { setSafeAreaColor } = useSafeArea();
+  
+  useEffect(() => {
+    setSafeAreaColor("#你想要的颜色");
+    
+    // 清理函数，页面卸载时恢复默认颜色
+    return () => {
+      setSafeAreaColor("#75B798");
+    };
+  }, [setSafeAreaColor]);
+  
+  // ... 页面内容
+};
