@@ -9,8 +9,8 @@ import PlantCard from "@/components/PlantCard";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import html2canvas from "html2canvas";
 
-// Background options interface
 interface BackgroundOption {
   id: string;
   name: string;
@@ -33,11 +33,10 @@ interface StickerProps {
   onDelete: () => void;
 }
 
-// Define the Collage interface for saved collages
 interface SavedCollage {
   id: string;
   name: string;
-  imageUrl: string; // Base64 encoded image or URL
+  imageUrl: string;
   createdAt: Date;
   stickers: Array<{
     id: string;
@@ -47,6 +46,7 @@ interface SavedCollage {
     scale: number;
     zIndex: number;
   }>;
+  background: BackgroundOption;
 }
 
 const PlantSticker: React.FC<StickerProps> = ({
@@ -71,25 +71,84 @@ const PlantSticker: React.FC<StickerProps> = ({
   const [initialScale, setInitialScale] = useState<number>(scale);
   const [initialRotation, setInitialRotation] = useState<number>(rotation);
   const [lastTouchAngle, setLastTouchAngle] = useState<number | null>(null);
-  
-  // Handle touch start for drag, rotate, and pinch gestures
+
+  // Mouse wheel for scaling
+  const handleWheel = (e: React.WheelEvent) => {
+    if (!selected) return;
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    const newScale = Math.max(0.3, Math.min(3, scale + delta));
+    onResize(newScale);
+  };
+
+  // Mouse drag with modifier keys for rotation and scaling
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelect();
+    
+    if (e.shiftKey) {
+      // Shift + drag for rotation
+      const rect = stickerRef.current?.getBoundingClientRect();
+      if (rect) {
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const initialAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * 180 / Math.PI;
+        setLastTouchAngle(initialAngle);
+        setInitialRotation(rotation);
+      }
+    } else if (e.ctrlKey || e.metaKey) {
+      // Ctrl/Cmd + drag for scaling
+      setInitialScale(scale);
+      setDragStart({ x: e.clientX, y: e.clientY });
+    } else {
+      // Normal drag for moving
+      setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!dragStart && lastTouchAngle === null) return;
+    
+    if (e.shiftKey && lastTouchAngle !== null) {
+      // Rotation
+      const rect = stickerRef.current?.getBoundingClientRect();
+      if (rect) {
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * 180 / Math.PI;
+        const angleDiff = currentAngle - lastTouchAngle;
+        onRotate(initialRotation + angleDiff);
+      }
+    } else if ((e.ctrlKey || e.metaKey) && dragStart) {
+      // Scaling
+      const deltaY = e.clientY - dragStart.y;
+      const scaleFactor = 1 + (deltaY * 0.01);
+      const newScale = Math.max(0.3, Math.min(3, initialScale * scaleFactor));
+      onResize(newScale);
+    } else if (dragStart && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+      // Moving
+      onMove({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  };
+
+  // Touch event handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     e.stopPropagation();
     onSelect();
     
     if (e.touches.length === 1) {
-      // Single touch for dragging
       const touch = e.touches[0];
       setDragStart({ 
         x: touch.clientX - position.x, 
         y: touch.clientY - position.y 
       });
     } else if (e.touches.length === 2) {
-      // Two touches for pinching (resize) and rotation
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       
-      // Calculate distance between two touches for pinch gesture
       const distance = Math.hypot(
         touch2.clientX - touch1.clientX,
         touch2.clientY - touch1.clientY
@@ -98,7 +157,6 @@ const PlantSticker: React.FC<StickerProps> = ({
       setInitialTouchDistance(distance);
       setInitialScale(scale);
       
-      // Calculate angle for rotation gesture
       const angle = Math.atan2(
         touch2.clientY - touch1.clientY,
         touch2.clientX - touch1.clientX
@@ -109,86 +167,91 @@ const PlantSticker: React.FC<StickerProps> = ({
     }
   };
   
-  // Handle touch move for dragging, rotating and pinching
   const handleTouchMove = (e: React.TouchEvent) => {
     e.stopPropagation();
-    e.preventDefault(); // Prevent page scrolling during gestures
+    e.preventDefault();
     
     if (e.touches.length === 1 && dragStart) {
-      // Handle dragging
       const touch = e.touches[0];
       onMove({
         x: touch.clientX - dragStart.x,
         y: touch.clientY - dragStart.y
       });
     } else if (e.touches.length === 2 && initialTouchDistance !== null && lastTouchAngle !== null) {
-      // Handle pinch and rotate
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       
-      // Calculate new distance for scaling
       const distance = Math.hypot(
         touch2.clientX - touch1.clientX,
         touch2.clientY - touch1.clientY
       );
       
-      // Apply scaling based on pinch gesture
       const scaleFactor = distance / initialTouchDistance;
-      onResize(Math.max(0.5, Math.min(3, initialScale * scaleFactor)));
+      onResize(Math.max(0.3, Math.min(3, initialScale * scaleFactor)));
       
-      // Calculate new angle for rotation
       const angle = Math.atan2(
         touch2.clientY - touch1.clientY,
         touch2.clientX - touch1.clientX
       ) * 180 / Math.PI;
       
-      // Apply rotation
       const angleDiff = angle - lastTouchAngle;
       onRotate(initialRotation + angleDiff);
     }
   };
   
-  // Reset touch states when touch ends
   const handleTouchEnd = () => {
     setDragStart(null);
     setInitialTouchDistance(null);
     setLastTouchAngle(null);
   };
 
-  // Mouse event handlers (kept for desktop support)
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onSelect();
-    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!dragStart) return;
-    onMove({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y
-    });
-  };
-
   const handleMouseUp = () => {
     setDragStart(null);
+    setLastTouchAngle(null);
   };
 
   useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (!dragStart && lastTouchAngle === null) return;
+      
+      if (e.shiftKey && lastTouchAngle !== null) {
+        const rect = stickerRef.current?.getBoundingClientRect();
+        if (rect) {
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * 180 / Math.PI;
+          const angleDiff = currentAngle - lastTouchAngle;
+          onRotate(initialRotation + angleDiff);
+        }
+      } else if ((e.ctrlKey || e.metaKey) && dragStart) {
+        const deltaY = e.clientY - dragStart.y;
+        const scaleFactor = 1 + (deltaY * 0.01);
+        const newScale = Math.max(0.3, Math.min(3, initialScale * scaleFactor));
+        onResize(newScale);
+      } else if (dragStart && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+        onMove({
+          x: e.clientX - dragStart.x,
+          y: e.clientY - dragStart.y
+        });
+      }
+    };
+
+    document.addEventListener('mousemove', handleGlobalMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
     document.addEventListener('mouseleave', handleMouseUp);
     
     return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       document.removeEventListener('mouseleave', handleMouseUp);
     };
-  }, []);
+  }, [dragStart, lastTouchAngle, initialRotation, initialScale]);
 
   return (
     <>
       <div
         ref={stickerRef}
-        className={`absolute cursor-move ${selected ? 'ring-2 ring-accent' : ''}`}
+        className={`absolute cursor-move select-none ${selected ? 'ring-2 ring-plantDiary-vividGreen' : ''}`}
         style={{
           left: `${position.x}px`,
           top: `${position.y}px`,
@@ -197,10 +260,10 @@ const PlantSticker: React.FC<StickerProps> = ({
           transition: dragStart ? 'none' : 'transform 0.1s ease',
         }}
         onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onWheel={handleWheel}
         onClick={(e) => {
           e.stopPropagation();
           if (plant.memories.length > 0 && !selected) {
@@ -212,7 +275,7 @@ const PlantSticker: React.FC<StickerProps> = ({
           <img 
             src={plant.imageUrl} 
             alt={plant.name}
-            className="w-full h-full object-contain" 
+            className="w-full h-full object-contain pointer-events-none" 
             draggable={false}
           />
           {selected && (
@@ -250,12 +313,16 @@ const PlantSticker: React.FC<StickerProps> = ({
                 </div>
                 <p className="text-sm">{plant.memories[0].text}</p>
                 <div className="flex flex-wrap gap-2">
-                  <span className="text-xs bg-plantDiary-blue/30 px-2 py-0.5 rounded-full">
-                    {plant.memories[0].weather}
-                  </span>
-                  <span className="text-xs bg-plantDiary-vibrantYellow/30 px-2 py-0.5 rounded-full">
-                    {plant.memories[0].location}
-                  </span>
+                  {plant.memories[0].weather && (
+                    <span className="text-xs bg-plantDiary-blue/30 px-2 py-0.5 rounded-full">
+                      {plant.memories[0].weather}
+                    </span>
+                  )}
+                  {plant.memories[0].location && (
+                    <span className="text-xs bg-plantDiary-vibrantYellow/30 px-2 py-0.5 rounded-full">
+                      {plant.memories[0].location}
+                    </span>
+                  )}
                 </div>
               </div>
             )}
@@ -294,8 +361,7 @@ const Collage: React.FC = () => {
   const [savedCollages, setSavedCollages] = useState<SavedCollage[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedCollage, setSelectedCollage] = useState<SavedCollage | null>(null);
-  
-  // Background options
+
   const backgroundOptions: BackgroundOption[] = [
     {
       id: 'white',
@@ -355,13 +421,11 @@ const Collage: React.FC = () => {
     }
   ];
 
-  // Load saved collages from localStorage on component mount
   useEffect(() => {
     const savedCollagesData = localStorage.getItem('savedCollages');
     if (savedCollagesData) {
       try {
         const parsedData = JSON.parse(savedCollagesData);
-        // Convert string dates back to Date objects
         const collagesWithDates = parsedData.map((collage: any) => ({
           ...collage,
           createdAt: new Date(collage.createdAt),
@@ -372,15 +436,16 @@ const Collage: React.FC = () => {
       }
     }
 
-    // Check if there's a collage to load from location state
     if (location.state?.collageToLoad) {
       const collageData = location.state.collageToLoad;
       setStickers(collageData.stickers);
+      if (collageData.background) {
+        setSelectedBackground(collageData.background);
+      }
       toast.success(`Loaded collage "${collageData.name}"`);
     }
   }, [location.state]);
 
-  // Save collages to localStorage when they change
   useEffect(() => {
     if (savedCollages.length > 0) {
       localStorage.setItem('savedCollages', JSON.stringify(savedCollages));
@@ -417,7 +482,6 @@ const Collage: React.FC = () => {
   const handleStickerSelect = (stickerId: string) => {
     setSelectedStickerId(stickerId);
     
-    // Move the selected sticker to the top
     setStickers(stickers.map(sticker => {
       if (sticker.id === stickerId) {
         return { ...sticker, zIndex: nextZIndex };
@@ -460,11 +524,20 @@ const Collage: React.FC = () => {
     setSelectedStickerId(null);
   };
 
-  // Capture the current canvas as an image
   const captureCanvas = async (): Promise<string> => {
-    // In a real application, we would use html-to-image or a similar library
-    // For now, we'll simulate with a placeholder image URL
-    return "https://via.placeholder.com/400x300/f0f8ff/3a7bd5?text=Plant+Collage";
+    if (!canvasRef.current) return "";
+    
+    try {
+      const canvas = await html2canvas(canvasRef.current, {
+        backgroundColor: null,
+        scale: 2,
+        useCORS: true,
+      });
+      return canvas.toDataURL();
+    } catch (error) {
+      console.error('Failed to capture canvas:', error);
+      return "https://via.placeholder.com/400x300/f0f8ff/3a7bd5?text=Plant+Collage";
+    }
   };
 
   const handleSaveCollage = async () => {
@@ -482,12 +555,12 @@ const Collage: React.FC = () => {
         imageUrl,
         createdAt: new Date(),
         stickers: [...stickers],
+        background: selectedBackground,
       };
       
       const updatedCollages = [...savedCollages, newCollage];
       setSavedCollages(updatedCollages);
       
-      // Save to localStorage immediately
       localStorage.setItem('savedCollages', JSON.stringify(updatedCollages));
       
       setSaveDialogOpen(false);
@@ -495,7 +568,6 @@ const Collage: React.FC = () => {
       
       toast.success(`Collage "${newCollage.name}" saved successfully!`);
       
-      // Navigate back to the main page with the collage tab active
       navigate("/", { state: { activeTab: "collage" } });
     } catch (error) {
       console.error('Failed to save collage:', error);
@@ -514,7 +586,6 @@ const Collage: React.FC = () => {
   };
 
   const handleShare = (collage?: SavedCollage) => {
-    // In a real app, we would implement proper sharing functionality here
     const shareMessage = collage 
       ? `Sharing collage "${collage.name}"` 
       : "Sharing current collage";
@@ -530,7 +601,6 @@ const Collage: React.FC = () => {
     }).format(date);
   };
 
-  // Main collage editor view
   return (
     <div className="relative h-screen flex flex-col bg-plantDiary-lightGreen/20">
       {/* Header */}
@@ -575,7 +645,14 @@ const Collage: React.FC = () => {
           </Button>
         </div>
       </div>
-      
+
+      {/* Instructions */}
+      <div className="px-4 py-2 bg-plantDiary-yellow/10 border-b">
+        <p className="text-xs text-center text-gray-600">
+          💡 Drag to move • Scroll to scale • Shift+drag to rotate • Ctrl+drag to scale
+        </p>
+      </div>
+
       {/* Canvas */}
       <div 
         ref={canvasRef}
@@ -599,7 +676,7 @@ const Collage: React.FC = () => {
           />
         ))}
       </div>
-      
+
       {/* Add sticker button */}
       <div className="fixed bottom-20 right-4">
         <Button 
@@ -609,7 +686,7 @@ const Collage: React.FC = () => {
           <Plus className="h-6 w-6" />
         </Button>
       </div>
-      
+
       {/* Background selector sheet */}
       <Sheet open={showBackgroundSelector} onOpenChange={setShowBackgroundSelector}>
         <SheetContent className="sm:max-w-md">
@@ -617,7 +694,6 @@ const Collage: React.FC = () => {
             <SheetTitle>Choose Background</SheetTitle>
           </SheetHeader>
           <div className="mt-4 space-y-6">
-            {/* Texture backgrounds */}
             <div>
               <h3 className="font-medium mb-3 flex items-center">
                 <Image className="h-4 w-4 mr-2" />
@@ -647,7 +723,6 @@ const Collage: React.FC = () => {
               </div>
             </div>
 
-            {/* Frame backgrounds */}
             <div>
               <h3 className="font-medium mb-3 flex items-center">
                 <Frame className="h-4 w-4 mr-2" />
@@ -681,7 +756,7 @@ const Collage: React.FC = () => {
           </div>
         </SheetContent>
       </Sheet>
-      
+
       {/* Sticker selector sheet */}
       <Sheet open={showStickerSelector} onOpenChange={setShowStickerSelector}>
         <SheetContent side="bottom" className="sm:max-w-md">

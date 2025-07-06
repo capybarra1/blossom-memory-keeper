@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { X, Heart, MapPin, CloudSun, Camera } from "lucide-react";
+import { X, Heart, MapPin, CloudSun, Camera, Sun, Cloud, CloudRain, Snowflake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,13 @@ interface AddMemoryModalProps {
     date: Date;
   }) => void;
 }
+
+const weatherOptions = [
+  { id: 'sunny', label: 'Sunny', icon: Sun },
+  { id: 'cloudy', label: 'Cloudy', icon: Cloud },
+  { id: 'rainy', label: 'Rainy', icon: CloudRain },
+  { id: 'snowy', label: 'Snowy', icon: Snowflake },
+];
 
 const AddMemoryModal: React.FC<AddMemoryModalProps> = ({
   plant,
@@ -105,11 +112,19 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({
               <CloudSun className="h-4 w-4 inline mr-1" />
               Weather (optional)
             </label>
-            <Input
-              placeholder="What was the weather like?"
-              value={weather}
-              onChange={(e) => setWeather(e.target.value)}
-            />
+            <div className="grid grid-cols-2 gap-2">
+              {weatherOptions.map((option) => (
+                <Button
+                  key={option.id}
+                  variant={weather === option.label ? "default" : "outline"}
+                  onClick={() => setWeather(weather === option.label ? "" : option.label)}
+                  className="flex items-center justify-center gap-2"
+                >
+                  <option.icon className="h-4 w-4" />
+                  {option.label}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -120,7 +135,7 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({
             </Button>
             <Button 
               onClick={handleSave} 
-              className="flex-1 bg-accent hover:bg-accent/90"
+              className="flex-1 bg-plantDiary-vividGreen hover:bg-plantDiary-darkGreen text-white"
               disabled={!memoryText.trim()}
             >
               <Heart className="h-4 w-4 mr-2" />
