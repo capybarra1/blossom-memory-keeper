@@ -15,18 +15,11 @@ const SpecimenBook: React.FC = () => {
   const [selectedPlant, setSelectedPlant] = useState<Plant | null>(null);
   const [showAddMemory, setShowAddMemory] = useState(false);
   const [plants, setPlants] = useState(dummyPlants);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   // 刷新植物数据
   const refreshPlants = () => {
     setPlants([...dummyPlants]);
-    setRefreshKey(prev => prev + 1);
   };
-
-  // 当数据更新时刷新组件
-  useEffect(() => {
-    refreshPlants();
-  }, [refreshKey]);
 
   const plantsByCategory = getPlantsByCategory();
   const categories = ["Flower", "Leaf", "Seed", "Fruit"];
@@ -51,6 +44,7 @@ const SpecimenBook: React.FC = () => {
     : plants;
 
   const handlePlantClick = (plant: Plant) => {
+    console.log('Plant clicked:', plant.name);
     // 获取最新的植物数据
     const updatedPlant = getPlantById(plant.id) || plant;
     setSelectedPlant(updatedPlant);
@@ -216,7 +210,7 @@ const SpecimenBook: React.FC = () => {
             {filteredPlants.length > 0 ? (
               filteredPlants.map(plant => (
                 <PlantCard
-                  key={`${plant.id}-${refreshKey}`}
+                  key={plant.id}
                   plant={plant}
                   onClick={() => handlePlantClick(plant)}
                 />
@@ -258,7 +252,7 @@ const SpecimenBook: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   {(plantsByCategory[category] || []).map(plant => (
                     <PlantCard
-                      key={`${plant.id}-${refreshKey}`}
+                      key={plant.id}
                       plant={plant}
                       onClick={() => handlePlantClick(plant)}
                     />
