@@ -2,13 +2,14 @@
 import { format } from 'date-fns';
 import lameiImg from '/src/asset/plants/lamei.png';
 import purpleWisteriaImg from '/src/asset/plants/purple_wisteria.png';
+
 export interface PlantMemory {
   id: string;
-  text?: string;
+  text: string;
   date: Date;
-  photoUrl?: string;
-  weather?: string;
-  location?: string;
+  photoUrl: string;
+  weather: string;
+  location: string;
 }
 
 export interface Plant {
@@ -23,7 +24,7 @@ export interface Plant {
   category: string;
 }
 
-export const dummyPlants: Plant[] = [
+export let dummyPlants: Plant[] = [
   {
     id: '1',
     name: 'Wintersweet',
@@ -51,7 +52,7 @@ export const dummyPlants: Plant[] = [
     dateCollected: new Date(2024, 12, 3),
     imageUrl: purpleWisteriaImg,
     description: 'A cascading cluster of fragrant flowers,often seen hanging from garden trellises.',
-    hasMemory: true,
+    hasMemory: false,
     memories: [
     ],
     category: 'Flower'
@@ -67,26 +68,6 @@ export const dummyPlants: Plant[] = [
     memories: [],
     category: 'Fern'
   },
- /* {
-    id: '4',
-    name: 'White Daisy',
-    scientificName: 'Leucanthemum vulgare',
-    dateCollected: new Date(2023, 4, 5),
-    imageUrl: 'https://images.unsplash.com/photo-1472396961693-142e6e269027',
-    description: 'A classic daisy with white petals and a yellow center.',
-    hasMemory: false,
-    memories: [
-      {
-        id: '4-1',
-        text: 'Found these growing wild by the lake on our camping trip.',
-        date: new Date(2023, 4, 5),
-        photoUrl: 'https://images.unsplash.com/photo-1472396961693-142e6e269027',
-        weather: 'Partly cloudy',
-        location: 'Lake Serenity'
-      }
-    ],
-    category: 'Flower'
-  },*/
   {
     id: '5',
     name: 'Pine Needle',
@@ -99,6 +80,32 @@ export const dummyPlants: Plant[] = [
     category: 'Tree'
   }
 ];
+
+// 添加更新植物的函数
+export const updatePlantWithMemory = (plantId: string, memory: Omit<PlantMemory, 'id'>) => {
+  const memoryWithId: PlantMemory = {
+    ...memory,
+    id: `${plantId}-${Date.now()}`
+  };
+  
+  dummyPlants = dummyPlants.map(plant => {
+    if (plant.id === plantId) {
+      return {
+        ...plant,
+        hasMemory: true,
+        memories: [...plant.memories, memoryWithId]
+      };
+    }
+    return plant;
+  });
+  
+  return memoryWithId;
+};
+
+// 获取植物的函数
+export const getPlantById = (id: string): Plant | undefined => {
+  return dummyPlants.find(plant => plant.id === id);
+};
 
 export const formatDateString = (date: Date) => {
   return format(date, 'MMM d, yyyy');

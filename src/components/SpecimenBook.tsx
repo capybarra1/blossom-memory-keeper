@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Plus, Heart, X, Leaf } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { dummyPlants, Plant, getPlantsByCategory, formatDateString } from "@/lib/dummyData";
+import { dummyPlants, Plant, getPlantsByCategory, formatDateString, updatePlantWithMemory, getPlantById } from "@/lib/dummyData";
 import PlantCard from "./PlantCard";
 import AddMemoryModal from "./AddMemoryModal";
 import { cn } from "@/lib/utils";
@@ -14,6 +15,19 @@ const SpecimenBook: React.FC = () => {
   const [selectedPlant, setSelectedPlant] = useState<Plant | null>(null);
   const [showAddMemory, setShowAddMemory] = useState(false);
   const [plants, setPlants] = useState(dummyPlants);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // 刷新植物数据
+  const refreshPlants = () => {
+    setPlants([...dummyPlants]);
+    setRefreshKey(prev => prev + 1);
+  };
+
+  // 当数据更新时刷新组件
+  useEffect(() => {
+    refreshPlants();
+  }, [refreshKey]);
+
   const plantsByCategory = getPlantsByCategory();
   const categories = ["Flower", "Leaf", "Seed", "Fruit"];
 
@@ -37,7 +51,9 @@ const SpecimenBook: React.FC = () => {
     : plants;
 
   const handlePlantClick = (plant: Plant) => {
-    setSelectedPlant(plant);
+    // 获取最新的植物数据
+    const updatedPlant = getPlantById(plant.id) || plant;
+    setSelectedPlant(updatedPlant);
   };
 
   const handleClose = () => {
@@ -50,22 +66,29 @@ const SpecimenBook: React.FC = () => {
 
   const handleSaveMemory = (memory: any) => {
     if (selectedPlant) {
-      const updatedPlants = plants.map(plant => {
-        if (plant.id === selectedPlant.id) {
-          return {
-            ...plant,
-            hasMemory: true,
-            memories: [...plant.memories, memory]
-          };
-        }
-        return plant;
+      console.log('Saving memory:', memory);
+      
+      // 使用全局函数更新植物数据
+      const savedMemory = updatePlantWithMemory(selectedPlant.id, {
+        text: memory.text,
+        location: memory.location,
+        weather: memory.weather,
+        photoUrl: memory.photoUrl,
+        date: memory.date
       });
-      setPlants(updatedPlants);
-      setSelectedPlant({
-        ...selectedPlant,
-        hasMemory: true,
-        memories: [...selectedPlant.memories, memory]
-      });
+      
+      console.log('Memory saved:', savedMemory);
+      
+      // 刷新植物数据
+      refreshPlants();
+      
+      // 更新当前选中的植物
+      const updatedPlant = getPlantById(selectedPlant.id);
+      if (updatedPlant) {
+        setSelectedPlant(updatedPlant);
+      }
+      
+      setShowAddMemory(false);
     }
   };
 
@@ -122,37 +145,51 @@ const SpecimenBook: React.FC = () => {
                 </div>
               </div>
 
-              {selectedPlant.hasMemory && selectedPlant.memories.length ? (
+              {selectedPlant.hasMemory && selectedPlant.memories.length > 0 ? (
                 <div>
                   <h3 className="font-semibold mb-3 flex items-center">
                     <Heart className="h-4 w-4 text-rose-500 mr-2 fill-rose-500" />
                     Attached Memories
                   </h3>
 
-                  <div className="floating-card rounded-2xl p-4 relative">
-                    <div className="absolute top-0 right-0 w-20 h-20 rounded-bl-3xl rounded-tr-2xl pointer-events-none"></div>
-                    <div className="flex gap-3 mb-3">
-                      <img
-                        src={selectedPlant.memories[0].photoUrl}
-                        alt="Memory"
-                        className="w-20 h-20 rounded-lg object-cover"
-                      />
-                      <div>
-                        <p className="text-sm">{selectedPlant.memories[0].text}</p>
-                        <div className="flex gap-2 mt-2">
-                          <span className="text-xs bg-plantDiary-blue/30 px-2 py-0.5 rounded-full">
-                            {selectedPlant.memories[0].weather}
-                          </span>
-                          <span className="text-xs bg-plantDiary-vibrantYellow/30 px-2 py-0.5 rounded-full">
-                            {selectedPlant.memories[0].location}
-                          </span>
+                  {selectedPlant.memories.map((memory, index) => (
+                    <div key={memory.id} className="floating-card rounded-2xl p-4 relative mb-3">
+                      <div className="absolute top-0 right-0 w-20 h-20 rounded-bl-3xl rounded-tr-2xl pointer-events-none"></div>
+                      <div className="flex gap-3 mb-3">
+                        <img
+                          src={memory.photoUrl}
+                          alt="Memory"
+                          className="w-20 h-20 rounded-lg object-cover"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm mb-2">{memory.text}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {memory.weather && (
+                              <span className="text-xs bg-plantDiary-blue/30 px-2 py-0.5 rounded-full">
+                                {memory.weather}
+                              </span>
+                            )}
+                            {memory.location && (
+                              <span className="text-xs bg-plantDiary-vibrantYellow/30 px-2 py-0.5 rounded-full">
+                                {memory.location}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
+                      <p className="text-xs text-foreground/60">
+                        {formatDateString(memory.date)}
+                      </p>
                     </div>
-                    <p className="text-xs text-foreground/60">
-                      {formatDateString(selectedPlant.memories[0].date)}
-                    </p>
-                  </div>
+                  ))}
+                  
+                  <Button 
+                    onClick={handleAddMemory}
+                    className="w-full bg-gradient-to-r from-plantDiary-vividGreen to-plantDiary-darkGreen hover:from-plantDiary-darkGreen hover:to-plantDiary-vividGreen text-white"
+                  >
+                    <Heart className="h-4 w-4 mr-2" />
+                    Add Another Memory
+                  </Button>
                 </div>
               ) : (
                 <div className="text-center p-4 floating-card rounded-2xl bg-gradient-to-br from-white/90 to-plantDiary-lightGreen/20">
@@ -179,7 +216,7 @@ const SpecimenBook: React.FC = () => {
             {filteredPlants.length > 0 ? (
               filteredPlants.map(plant => (
                 <PlantCard
-                  key={plant.id}
+                  key={`${plant.id}-${refreshKey}`}
                   plant={plant}
                   onClick={() => handlePlantClick(plant)}
                 />
@@ -221,7 +258,7 @@ const SpecimenBook: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   {(plantsByCategory[category] || []).map(plant => (
                     <PlantCard
-                      key={plant.id}
+                      key={`${plant.id}-${refreshKey}`}
                       plant={plant}
                       onClick={() => handlePlantClick(plant)}
                     />

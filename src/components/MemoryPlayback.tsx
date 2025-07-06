@@ -1,5 +1,5 @@
 
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import {Heart, Calendar, MapPin, CloudSun, ChevronLeft, ChevronRight} from "lucide-react";
 import {dummyPlants} from "@/lib/dummyData";
 import {motion, AnimatePresence} from "framer-motion";
@@ -8,7 +8,15 @@ import Header from "./Header";
 const MemoryPlayback: React.FC = () => {
     const [currentIndex, setCurrentIndex] = useState<number>(0);
     const [direction, setDirection] = useState<number>(0);
+    const [refreshKey, setRefreshKey] = useState(0);
+    
+    // 获取有记忆的植物，每次渲染都重新计算以获取最新数据
     const plantsWithMemories = dummyPlants.filter(plant => plant.hasMemory && plant.memories.length > 0);
+
+    // 当路由变化或数据更新时刷新
+    useEffect(() => {
+        setRefreshKey(prev => prev + 1);
+    }, []);
 
     const handleNextPage = () => {
         setDirection(1);
@@ -45,8 +53,10 @@ const MemoryPlayback: React.FC = () => {
         );
     }
 
-    const currentPlant = plantsWithMemories[currentIndex];
-    const currentMemory = currentPlant?.memories[0];
+    // 确保currentIndex不超出范围
+    const safeCurrentIndex = Math.min(currentIndex, plantsWithMemories.length - 1);
+    const currentPlant = plantsWithMemories[safeCurrentIndex];
+    const currentMemory = currentPlant?.memories[0]; // 显示第一个记忆
 
     if (!currentMemory) {
         return (
@@ -86,7 +96,7 @@ const MemoryPlayback: React.FC = () => {
     };
 
     return (
-        <div className="h-full flex flex-col">
+        <div className="h-full flex flex-col" key={refreshKey}>
             <Header title="Memory Journal" subtitle="Your plant memories"/>
 
             <div className="flex-1 flex flex-col relative overflow-hidden bg-plantDiary-peach/30 px-4 py-8">
@@ -96,7 +106,7 @@ const MemoryPlayback: React.FC = () => {
                 <AnimatePresence initial={false} custom={direction}>
                     <motion.div
                         className="absolute inset-x-4 top-8 bottom-24 rounded-lg shadow-lg bg-white overflow-hidden"
-                        key={currentIndex}
+                        key={`${safeCurrentIndex}-${refreshKey}`}
                         custom={direction}
                         variants={pageVariants}
                         initial="enter"
@@ -179,7 +189,7 @@ const MemoryPlayback: React.FC = () => {
 
                     <div className="text-center bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
                         <span className="text-xs">
-                          {currentIndex + 1} / {plantsWithMemories.length}
+                          {safeCurrentIndex + 1} / {plantsWithMemories.length}
                         </span>
                     </div>
 
