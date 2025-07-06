@@ -126,8 +126,8 @@ const MemoryPlayback: React.FC = () => {
 
                                     <div className="mb-6 relative">
                                         <img
-                                            src="https://images.unsplash.com/photo-1498579150354-977475b7ea0b"
-                                            alt="Lavender field landscape"
+                                            src={currentMemory.photoUrl}
+                                            alt={`Memory of ${currentPlant.name}`}
                                             className="w-full h-60 object-cover rounded-lg shadow-md"
                                         />
                                         <div
