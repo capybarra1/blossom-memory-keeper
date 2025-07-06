@@ -1,8 +1,9 @@
-
 import React, {useState, useEffect} from "react";
 import {Heart, Calendar, MapPin, CloudSun, ChevronLeft, ChevronRight} from "lucide-react";
 import {dummyPlants} from "@/lib/dummyData";
 import {motion, AnimatePresence} from "framer-motion";
+import OptimizedImage from "./OptimizedImage";
+import { useImagePreloader } from "@/hooks/useImagePreloader";
 import Header from "./Header";
 
 const MemoryPlayback: React.FC = () => {
@@ -10,10 +11,16 @@ const MemoryPlayback: React.FC = () => {
     const [direction, setDirection] = useState<number>(0);
     const [refreshKey, setRefreshKey] = useState(0);
     
-    // 获取有记忆的植物，每次渲染都重新计算以获取最新数据
     const plantsWithMemories = dummyPlants.filter(plant => plant.hasMemory && plant.memories.length > 0);
 
-    // 当路由变化或数据更新时刷新
+    // 预加载所有记忆图片
+    const memoryImageUrls = plantsWithMemories.flatMap(plant => [
+        plant.imageUrl,
+        ...plant.memories.map(memory => memory.photoUrl)
+    ]);
+    
+    const { loadedImages, isLoading } = useImagePreloader(memoryImageUrls);
+
     useEffect(() => {
         setRefreshKey(prev => prev + 1);
     }, []);
@@ -32,7 +39,6 @@ const MemoryPlayback: React.FC = () => {
         );
     };
 
-    // Handle empty state
     if (plantsWithMemories.length === 0) {
         return (
             <div className="h-full flex flex-col">
@@ -53,10 +59,9 @@ const MemoryPlayback: React.FC = () => {
         );
     }
 
-    // 确保currentIndex不超出范围
     const safeCurrentIndex = Math.min(currentIndex, plantsWithMemories.length - 1);
     const currentPlant = plantsWithMemories[safeCurrentIndex];
-    const currentMemory = currentPlant?.memories[0]; // 显示第一个记忆
+    const currentMemory = currentPlant?.memories[0];
 
     if (!currentMemory) {
         return (
@@ -100,7 +105,6 @@ const MemoryPlayback: React.FC = () => {
             <Header title="Memory Journal" subtitle="Your plant memories"/>
 
             <div className="flex-1 flex flex-col relative overflow-hidden bg-plantDiary-peach/30 px-4 py-8">
-                {/* Journal pages */}
                 <div className="absolute inset-0 bg-paper-texture opacity-50"></div>
 
                 <AnimatePresence initial={false} custom={direction}>
@@ -115,7 +119,6 @@ const MemoryPlayback: React.FC = () => {
                         transition={pageTransition as any}
                     >
                         <div className="h-full flex flex-col">
-                            {/* Memory page content */}
                             <div className="p-6 flex-1">
                                 <div className="flex flex-col h-full">
                                     <div className="mb-4 text-center">
@@ -125,9 +128,9 @@ const MemoryPlayback: React.FC = () => {
                                     </div>
 
                                     <div className="mb-6 relative">
-                                        <img
+                                        <OptimizedImage
                                             src={currentMemory.photoUrl}
-                                            alt={`Memory of ${currentPlant.name}`}
+                                            alt={currentPlant.name}
                                             className="w-full h-60 object-cover rounded-lg shadow-md"
                                         />
                                         <div
@@ -137,31 +140,31 @@ const MemoryPlayback: React.FC = () => {
                                     </div>
 
                                     <div className="flex items-center justify-between mb-4">
-                                        <div className="flex items-center flex-1">
+                                        <div className="flex items-center">
                                             <div className="w-12 h-12 relative mr-3">
-                                                <img
+                                                <OptimizedImage
                                                     src={currentPlant.imageUrl}
                                                     alt={currentPlant.name}
                                                     className="w-full h-full object-contain"
                                                 />
                                             </div>
-                                            <div className="flex-1">
+                                            <div>
                                                 <h3 className="font-semibold">{currentPlant.name}</h3>
                                                 <p className="text-xs italic text-foreground/60">{currentPlant.scientificName}</p>
                                             </div>
                                         </div>
                                         
-                                        <div className="flex flex-col gap-1.5 ml-2">
+                                        <div className="flex flex-col gap-1.5">
                                             {currentMemory.location && (
                                                 <div className="flex items-center text-xs bg-plantDiary-green/30 px-2 py-1 rounded-full">
                                                     <MapPin className="h-3 w-3 mr-1"/>
-                                                    <span className="whitespace-nowrap">{currentMemory.location}</span>
+                                                    {currentMemory.location}
                                                 </div>
                                             )}
                                             {currentMemory.weather && (
                                                 <div className="flex items-center text-xs bg-plantDiary-blue/30 px-2 py-1 rounded-full">
                                                     <CloudSun className="h-3 w-3 mr-1"/>
-                                                    <span className="whitespace-nowrap">{currentMemory.weather}</span>
+                                                    {currentMemory.weather}
                                                 </div>
                                             )}
                                         </div>
@@ -176,7 +179,6 @@ const MemoryPlayback: React.FC = () => {
                     </motion.div>
                 </AnimatePresence>
 
-                {/* Page navigation controls */}
                 <div className="absolute bottom-8 left-0 right-0 flex justify-between px-8">
                     <button
                         onClick={handlePrevPage}
@@ -203,7 +205,6 @@ const MemoryPlayback: React.FC = () => {
                     </button>
                 </div>
 
-                {/* Left and right tap zones for navigation - 只在有多页时显示 */}
                 {plantsWithMemories.length > 1 && (
                     <>
                         <div

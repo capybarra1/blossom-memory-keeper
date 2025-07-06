@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { dummyPlants, Plant, getPlantsByCategory, formatDateString, updatePlantWithMemory, getPlantById } from "@/lib/dummyData";
 import PlantCard from "./PlantCard";
 import AddMemoryModal from "./AddMemoryModal";
+import OptimizedImage from "./OptimizedImage";
+import { useImagePreloader } from "@/hooks/useImagePreloader";
 import { cn } from "@/lib/utils";
 import Header from "./Header";
 
@@ -15,7 +17,14 @@ const SpecimenBook: React.FC = () => {
   const [showAddMemory, setShowAddMemory] = useState(false);
   const [plants, setPlants] = useState(dummyPlants);
 
-  // 刷新植物数据
+  // 预加载所有植物图片和记忆图片
+  const allImageUrls = plants.flatMap(plant => [
+    plant.imageUrl,
+    ...plant.memories.map(memory => memory.photoUrl)
+  ]);
+  
+  const { loadedImages, isLoading } = useImagePreloader(allImageUrls);
+
   const refreshPlants = () => {
     setPlants([...dummyPlants]);
   };
@@ -23,7 +32,6 @@ const SpecimenBook: React.FC = () => {
   const plantsByCategory = getPlantsByCategory();
   const categories = ["Flower", "Leaf", "Seed", "Fruit"];
 
-  // Get current time to personalize greeting
   const currentHour = new Date().getHours();
   let greeting = "Good day";
 
@@ -44,7 +52,6 @@ const SpecimenBook: React.FC = () => {
 
   const handlePlantClick = (plant: Plant) => {
     console.log('Plant clicked:', plant.name);
-    // 获取最新的植物数据
     const updatedPlant = getPlantById(plant.id) || plant;
     setSelectedPlant(updatedPlant);
   };
@@ -61,7 +68,6 @@ const SpecimenBook: React.FC = () => {
     if (selectedPlant) {
       console.log('Saving memory:', memory);
       
-      // 使用全局函数更新植物数据
       const savedMemory = updatePlantWithMemory(selectedPlant.id, {
         text: memory.text,
         location: memory.location,
@@ -72,10 +78,8 @@ const SpecimenBook: React.FC = () => {
       
       console.log('Memory saved:', savedMemory);
       
-      // 刷新植物数据
       refreshPlants();
       
-      // 更新当前选中的植物
       const updatedPlant = getPlantById(selectedPlant.id);
       if (updatedPlant) {
         setSelectedPlant(updatedPlant);
@@ -87,7 +91,6 @@ const SpecimenBook: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      {/* === Header隐藏逻辑开始 === */}
       {!selectedPlant && (
         <Header title="Good Morning" subtitle="Start your botanical journey" />
       )}
@@ -108,7 +111,7 @@ const SpecimenBook: React.FC = () => {
           
           <div className="h-full animate-fade-in">
             <div className="relative h-2/5">
-              <img
+              <OptimizedImage
                 src={selectedPlant.imageUrl}
                 alt={selectedPlant.name}
                 className="h-full w-full object-cover"
@@ -150,7 +153,7 @@ const SpecimenBook: React.FC = () => {
                     <div key={memory.id} className="floating-card rounded-2xl p-4 relative mb-3">
                       <div className="absolute top-0 right-0 w-20 h-20 rounded-bl-3xl rounded-tr-2xl pointer-events-none"></div>
                       <div className="flex gap-3 mb-3">
-                        <img
+                        <OptimizedImage
                           src={memory.photoUrl}
                           alt="Memory"
                           className="w-20 h-20 rounded-lg object-cover"

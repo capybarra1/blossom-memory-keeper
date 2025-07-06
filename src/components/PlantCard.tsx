@@ -1,7 +1,9 @@
+
 import React from "react";
 import { Star } from "lucide-react";
 import { Plant, formatDateString } from "@/lib/dummyData";
 import { cn } from "@/lib/utils";
+import OptimizedImage from "./OptimizedImage";
 
 interface PlantCardProps {
   plant: Plant;
@@ -46,7 +48,7 @@ const PlantCard: React.FC<PlantCardProps> = ({
         {variant === "list" ? (
             <>
               <div className="h-full w-24 relative rounded-l-3xl overflow-hidden">
-                <img
+                <OptimizedImage
                     src={plant.imageUrl}
                     alt={plant.name}
                     className="h-full w-full object-fill"
@@ -62,7 +64,7 @@ const PlantCard: React.FC<PlantCardProps> = ({
         ) : (
             <>
               <div className="relative w-full flex-1 flex items-center justify-center p-6">
-                <img
+                <OptimizedImage
                     src={plant.imageUrl}
                     alt={plant.name}
                     className="max-h-32 w-auto object-contain mx-auto drop-shadow-sm"
