@@ -46,6 +46,13 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({
     }
   };
 
+  const handleCancel = () => {
+    setMemoryText("");
+    setLocation("");
+    setWeather("");
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -53,7 +60,7 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({
       <div className="w-full bg-white rounded-t-3xl max-h-[80vh] overflow-y-auto">
         <div className="sticky top-0 bg-white p-4 border-b flex items-center justify-between">
           <h2 className="text-lg font-semibold">Add Memory</h2>
-          <button onClick={onClose} className="p-2">
+          <button onClick={handleCancel} className="p-2">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -106,7 +113,7 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({
           </div>
 
           <div className="flex gap-3 pt-4">
-            <Button variant="outline" onClick={onClose} className="flex-1">
+            <Button variant="outline" onClick={handleCancel} className="flex-1">
               Cancel
             </Button>
             <Button 

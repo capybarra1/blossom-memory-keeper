@@ -484,10 +484,16 @@ const Collage: React.FC = () => {
         stickers: [...stickers],
       };
       
-      setSavedCollages([...savedCollages, newCollage]);
+      const updatedCollages = [...savedCollages, newCollage];
+      setSavedCollages(updatedCollages);
+      
+      // Save to localStorage immediately
+      localStorage.setItem('savedCollages', JSON.stringify(updatedCollages));
+      
       setSaveDialogOpen(false);
       setCollageName("");
-      toast.success(`Collage "${collageName}" saved successfully!`);
+      
+      toast.success(`Collage "${newCollage.name}" saved successfully!`);
       
       // Navigate back to the main page with the collage tab active
       navigate("/", { state: { activeTab: "collage" } });

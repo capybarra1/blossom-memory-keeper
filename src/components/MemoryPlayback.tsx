@@ -1,4 +1,3 @@
-
 import React, {useState} from "react";
 import {Heart, Calendar, MapPin, CloudSun, ChevronLeft, ChevronRight} from "lucide-react";
 import {dummyPlants} from "@/lib/dummyData";
@@ -68,17 +67,14 @@ const MemoryPlayback: React.FC = () => {
         enter: (direction: number) => ({
             x: direction > 0 ? 300 : -300,
             opacity: 0,
-            rotateY: direction > 0 ? 45 : -45,
         }),
         center: {
             x: 0,
             opacity: 1,
-            rotateY: 0,
         },
         exit: (direction: number) => ({
             x: direction < 0 ? 300 : -300,
             opacity: 0,
-            rotateY: direction < 0 ? 45 : -45,
         }),
     };
 
@@ -92,13 +88,13 @@ const MemoryPlayback: React.FC = () => {
         <div className="h-full flex flex-col">
             <Header title="Memory Journal" subtitle="Your plant memories"/>
 
-            <div className="flex-1 flex flex-col relative overflow-hidden bg-plantDiary-peach/30">
+            <div className="flex-1 flex flex-col relative overflow-hidden bg-plantDiary-peach/30 px-4 py-6">
                 {/* Journal pages */}
                 <div className="absolute inset-0 bg-paper-texture opacity-50"></div>
 
                 <AnimatePresence initial={false} custom={direction}>
                     <motion.div
-                        className="absolute inset-x-0 top-0 bottom-16 mx-4 my-4 rounded-lg shadow-lg bg-white overflow-hidden"
+                        className="absolute inset-x-4 top-6 bottom-20 rounded-lg shadow-lg bg-white overflow-hidden"
                         key={currentIndex}
                         custom={direction}
                         variants={pageVariants}
@@ -106,9 +102,6 @@ const MemoryPlayback: React.FC = () => {
                         animate="center"
                         exit="exit"
                         transition={pageTransition as any}
-                        style={{
-                            perspective: "1000px"
-                        }}
                     >
                         <div className="h-full flex flex-col">
                             {/* Memory page content */}
@@ -173,7 +166,7 @@ const MemoryPlayback: React.FC = () => {
                 </AnimatePresence>
 
                 {/* Page navigation controls */}
-                <div className="absolute bottom-4 left-0 right-0 flex justify-between px-8">
+                <div className="absolute bottom-6 left-0 right-0 flex justify-between px-8">
                     <button
                         onClick={handlePrevPage}
                         className="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity"
@@ -199,15 +192,15 @@ const MemoryPlayback: React.FC = () => {
                     </button>
                 </div>
 
-                {/* Tap zones for turning pages - 只在有多页时显示 */}
+                {/* Left and right tap zones for navigation - 只在有多页时显示 */}
                 {plantsWithMemories.length > 1 && (
                     <>
                         <div
-                            className="absolute top-0 bottom-16 left-0 w-1/3 cursor-pointer"
+                            className="absolute top-6 bottom-20 left-0 w-1/3 cursor-pointer"
                             onClick={handlePrevPage}
                         />
                         <div
-                            className="absolute top-0 bottom-16 right-0 w-1/3 cursor-pointer"
+                            className="absolute top-6 bottom-20 right-0 w-1/3 cursor-pointer"
                             onClick={handleNextPage}
                         />
                     </>
